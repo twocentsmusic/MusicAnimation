@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Music and Animation Unimodal</title>
+    <script src="jspsych/jspsych.js"></script>
+    <script src="jspsych/plugin-survey-text.js"></script>
+    <script src="jspsych/plugin-survey-likert.js"></script>
+    <script src="jspsych/plugin-preload.js"></script>
+    <script src="jspsych/plugin-html-keyboard-response.js"></script>
+    <script src="jspsych/plugin-html-button-response.js"></script>
+    <script src="jspsych/plugin-html-slider-response.js"></script>
+    <script src="jspsych/plugin-audio-slider-response.js"></script>
+    <script src="jspsych/plugin-audio-button-response.js"></script>
+    <script src="jspsych/plugin-audio-keyboard-response.js"></script>
+    <script src="jspsych/plugin-video-slider-response.js"></script>
+    <script src="jspsych/plugin-video-button-response.js"></script>
+    <script src="jspsych/plugin-video-keyboard-response.js"></script>
+    <link href="jspsych/jspsych.css" rel="stylesheet" type="text/css" />
+
+    <style>
+        .jspsych-display-element {
+            font-size: 24px;
+        }
+    </style>
+</head>
+  <body></body>
+  <script>
+var jsPsych = initJsPsych({
+    on_finish: function() {
+            jsPsych.data.get().localSave('csv','mydata.csv');
+        },
+        show_progress_bar: true
+    });
+    
+    var timeline = [];
+
+    var preload = {
+    type: jsPsychPreload,
+    auto_preload: true
+    }
+
+    var idInputTrial = {
+            type: jsPsychSurveyText,
+            questions: [
+                {prompt: 'Participant ID:', placeholder: '099', required: true},
+            ]
+    };
+    timeline.push(idInputTrial);
+
+    var welcome = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `
+        <div style="text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <p style="font-size: 32px; margin-left: -20px;">TEMPORAL CONGRUENCE<br>
+                        BETWEEN MUSIC & ANIMATION,<br>AND ITS EFFECT ON EMOTIONAL PERCEPTION</p>
+                    <br><br><br>
+                    <hr style="border-top: 8px orange; margin-left: -20px;">
+                    <p style="font-size: 24px; margin-left: -20px;">Thank you for participating in this study!</p>
+                    <br><br><br>
+                </div>
+                <img src="images/thank.png" style="width: 400px; height: auto;">
+            </div>
+        </div>
+    `,
+    choices: ['Continue to instructions'],
+    };
+    timeline.push(welcome);
+
+    var instructions = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: `
+        <style>
+            .custom-ol {
+                counter-reset: list-counter;
+                list-style: none;
+                padding-left: 0;
+            }
+            .custom-ol li {
+                counter-increment: list-counter;
+                margin-bottom: 10px;
+            }
+            .custom-ol li::before {
+                content: counter(list-counter, lower-alpha) ") ";
+                margin-right: 5px;
+            }
+        </style>
+        <div style="text-align: left; margin: 3in; margin-bottom: 1in; margin-top: 1in;">
+            <p style="font-size: 32px;">Welcome to the experiment</p>
+            <p style="font-size: 24px;">This experiment examines the relationship between audiovisual stimuli (music and animation)
+            and the perception of emotion.<br>
+            You will be asked to rate the intensity you perceive for 6 emotions for each animated film clip.</p>
+            <p> *** Add something to explain what perceived intensity means *** </p>
+            <p>There is no right or wrong answer - please go with whatever your intuition tells you for each rating.</p>
+        </div>
+        `,
+    choices: ['<img src="images/next.png" style="width: 150px; height: auto;">'],
+    };
+    timeline.push(instructions);
+
+    var volume = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: `
+        <div style="text-align: left; margin: 3in; margin-bottom: 1in; margin-top: 1in;">
+            <p style="font-size: 32px;">Make sure the volume is at a comfortable level</p>
+            <p>When you are ready, press play on this clip and use the volume keys on the keyboard to adjust your volume setting to a comfortable level.</p>
+            <p>Once you have set your desired volume level, please do not adjust it for the rest of the experiment.<br>
+            It is very important that you hear all the excerpts at the same volume.</p>
+        <audio id="audio" src="stimuli/LD_PracAmorous.wav" controls controlsList="nodownload novolume"></audio>
+        </div>
+        `,
+        choices: ['<img src="images/next.png" style="width: 150px; height: auto;">'],
+    };
+    timeline.push(volume);
+
+    var instructions1 = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: `
+        <div style="text-align: left; margin: 3in; margin-bottom: 1in; margin-top: 1in;">
+        <p style="font-size: 32px;">Practice trials</p>
+        <p style="font-size: 24px;">Here are two practice trials to familiarize yourself with the interface and procedure.
+            These trials are just for practice and your responses will not be recorded.
+            Feel free to ask the experimenter if you have any questions.</p>
+        <p>View the animations. Then, rate how your level of perceived emotion for each of the 6 listed emotions.
+            Feel free to ask any questions you may have at any point in the process.</p>
+        </div>
+        `,
+        choices: ['<img src="images/beginPrac.png" style="width: 150px; height: auto;">'],
+    };
+    timeline.push(instructions1);
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    var audioPracFiles = ['stimuli/LD_PracAmorous.wav','stimuli/LD_PracAngry.wav'];
+
+    shuffleArray(audioPracFiles);
+
+    audioPracFiles.forEach((audioPracFile) => {
+            var audioPrac = {
+                type: jsPsychSurveyLikert,
+                preamble: `<style>
+                    .jspsych-survey-likert-statement { 
+                        margin-top: -10; /* Adjust this value as needed */
+                    }
+                    .jspsych-btn { 
+                        margin-bottom: 30px; /* Adjust this value as needed */
+                    }
+                </style>
+                <div style="text-align: center; margin-bottom: 0in; margin-top: 0in;">
+                <p>Click to play the excerpt.<br>
+                    You may play the clip as many times as you like before you proceed to rate it.</p>
+                <audio id="audio" src="${audioPracFile}" controls></audio>
+                </div>
+                <p>Rate the music on these emotion scales</p>`,
+                questions: [
+                    {prompt: '', name: 'Joyful', labels: ['Not joyful (1)','(2)','(3)','(4)','(5)','(6)','Joyful (7)']},
+                    {prompt: '', name: 'Sorrowful', labels: ['Not sorrowful (1)','(2)','(3)','(4)','(5)','(6)','Sorrowful (7)']},
+                    {prompt: '', name: 'Playful', labels: ['Not playful (1)','(2)','(3)','(4)','(5)','(6)','Playful (7)']},
+                    {prompt: '', name: 'Calm', labels: ['Not calm (1)','(2)','(3)','(4)','(5)','(6)','Calm (7)']},
+                    {prompt: '', name: 'Triumphant', labels: ['Not triumphant (1)','(2)','(3)','(4)','(5)','(6)','Triumphant (7)']},
+                    {prompt: '', name: 'Agitated', labels: ['Not agitated (1)','(2)','(3)','(4)','(5)','(6)','Agitated (7)']}
+                ],
+                scale_width: 1000,
+                randomize_question_order: true,
+                autocomplete: false,
+                required: true,
+                data: {
+                    stimulus: audioPracFile
+                }
+            };
+            timeline.push(audioPrac);
+        });
+
+    var videoPracFiles = ['stimuli/LD_PracForest.mp4','stimuli/LD_PracSandcastle.mp4'];
+
+    shuffleArray(videoPracFiles);
+
+    videoPracFiles.forEach((videoPracFile) => {
+        var videoPrac = {
+            type: jsPsychSurveyLikert,
+            preamble: `<style>
+                        .jspsych-survey-likert-statement { 
+                            margin-top: -20; /* Adjust this value as needed */
+                        }
+                        .jspsych-btn { 
+                            margin-bottom: 30px; /* Adjust this value as needed */
+                        }
+                    </style>
+                    <video id="video" src="${videoPracFile}" controls style="width: 70%; height: auto;"></video>
+                    </div>
+                    <p>Click to play the excerpt.<br>
+                        You may play the clip as many times as you like before you proceed to rate it.<br><br>
+                        Rate the video on these emotion scales</p>`,
+            questions: [
+            {prompt: '', name: 'Joyful', labels: ['Not joyful (1)','(2)','(3)','(4)','(5)','(6)','Joyful (7)']},
+                    {prompt: '', name: 'Sorrowful', labels: ['Not sorrowful (1)','(2)','(3)','(4)','(5)','(6)','Sorrowful (7)']},
+                    {prompt: '', name: 'Playful', labels: ['Not playful (1)','(2)','(3)','(4)','(5)','(6)','Playful (7)']},
+                    {prompt: '', name: 'Calm', labels: ['Not calm (1)','(2)','(3)','(4)','(5)','(6)','Calm (7)']},
+                    {prompt: '', name: 'Triumphant', labels: ['Not triumphant (1)','(2)','(3)','(4)','(5)','(6)','Triumphant (7)']},
+                    {prompt: '', name: 'Agitated', labels: ['Not agitated (1)','(2)','(3)','(4)','(5)','(6)','Agitated (7)']}
+            ],
+            scale_width: 1000,
+            randomize_question_order: true,
+            autocomplete: false,
+            required: true,
+            data: {
+                    stimulus: videoPracFile
+                }
+            };
+        timeline.push(videoPrac);
+    });
+
+    var instructions2 = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: `
+        <div style="text-align: left; margin: 3in; margin-bottom: 1in; margin-top: 1in;">
+        <p style="font-size: 32px;">Do you have any questions?</p>
+        <p style="font-size: 24px;">Feel free to ask any questions you may have.</p>
+        <p>When you are ready, you may proceed with the experiment.</p>
+        </div>
+        `,
+        choices: ['<img src="images/ready.png" style="width: 150px; height: auto;">'],
+    };
+    timeline.push(instructions2);
+
+    var instructions3 = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: `
+        <div style="text-align: left; margin: 3in; margin-bottom: 1in; margin-top: 1in;">
+        <p style="font-size: 32px;">Proceed with the experiment</p>
+        <p style="font-size: 24px;">The experimenter will now leave you to it.</p>
+        <p>There will be 24 clips which could either be audio only, or video only.
+            After each one, you will rate your level of perceived emotion for each of the 6 emotions listed.</p>
+        </div>
+        `,
+        choices: ['<img src="images/beginExpt.png" style="width: 150px; height: auto;">'],
+    };
+    timeline.push(instructions3);
+
+var mediaFiles = [
+    ...['stimuli/DL_agitated.wav','stimuli/DL_calm.wav','stimuli/DL_joyous.wav','stimuli/DL_playful.wav',
+        'stimuli/DL_sorrowful.wav','stimuli/DL_triumphant.wav','stimuli/LD_agitated.wav','stimuli/LD_calm.wav',
+        'stimuli/LD_joyous.wav','stimuli/LD_playful.wav','stimuli/LD_sorrowful.wav','stimuli/LD_triumphant.wav'],
+    ...['stimuli/LD_PracForest.mp4','stimuli/LD_PracSandcastle.mp4']
+];
+
+shuffleArray(mediaFiles);
+
+mediaFiles.forEach((mediaFile) => {
+    if (mediaFile.endsWith('.wav')) {
+        var audio = {
+            type: jsPsychSurveyLikert,
+            preamble: `<style>
+                .jspsych-survey-likert-statement { 
+                    margin-top: -10; /* Adjust this value as needed */
+                }
+                .jspsych-btn { 
+                    margin-bottom: 30px; /* Adjust this value as needed */
+                }
+            </style>
+            <div style="text-align: center; margin-bottom: 0in; margin-top: 0in;">
+            <p>Click to play the excerpt.<br>
+                You may play the clip as many times as you like before you proceed to rate it.</p>
+            <audio id="audio" src="${mediaFile}" controls controlsList="nodownload nofullscreen"></audio>
+            </div>
+            <p>Rate the music on these emotion scales</p>`,
+            questions: [
+                {prompt: '', name: 'Joyful', labels: ['Not joyful (1)','(2)','(3)','(4)','(5)','(6)','Joyful (7)']},
+                {prompt: '', name: 'Sorrowful', labels: ['Not sorrowful (1)','(2)','(3)','(4)','(5)','(6)','Sorrowful (7)']},
+                {prompt: '', name: 'Playful', labels: ['Not playful (1)','(2)','(3)','(4)','(5)','(6)','Playful (7)']},
+                {prompt: '', name: 'Calm', labels: ['Not calm (1)','(2)','(3)','(4)','(5)','(6)','Calm (7)']},
+                {prompt: '', name: 'Triumphant', labels: ['Not triumphant (1)','(2)','(3)','(4)','(5)','(6)','Triumphant (7)']},
+                {prompt: '', name: 'Agitated', labels: ['Not agitated (1)','(2)','(3)','(4)','(5)','(6)','Agitated (7)']}
+            ],
+            scale_width: 1000,
+            randomize_question_order: true,
+            autocomplete: false,
+            required: true,
+            data: {
+                stimulus: mediaFile
+            }
+        };
+        timeline.push(audio);
+    } else if (mediaFile.endsWith('.mp4')) {
+        var videoOnly = {
+            type: jsPsychSurveyLikert,
+            preamble: `<style>
+                        .jspsych-survey-likert-statement { 
+                            margin-top: -20; /* Adjust this value as needed */
+                        }
+                        .jspsych-btn { 
+                            margin-bottom: 30px; /* Adjust this value as needed */
+                        }
+                    </style>
+                    <video id="video" src="${mediaFile}" controls controlsList="nodownload nofullscreen" style="width: 70%; height: auto;"></video>
+                    </div>
+                    <p>Click to play the excerpt.<br>
+                        You may play the clip as many times as you like before you proceed to rate it.<br><br>
+                        Rate the video on these emotion scales</p>`,
+            questions: [
+                {prompt: '', name: 'Joyful', labels: ['Not joyful (1)','(2)','(3)','(4)','(5)','(6)','Joyful (7)']},
+                {prompt: '', name: 'Sorrowful', labels: ['Not sorrowful (1)','(2)','(3)','(4)','(5)','(6)','Sorrowful (7)']},
+                {prompt: '', name: 'Playful', labels: ['Not playful (1)','(2)','(3)','(4)','(5)','(6)','Playful (7)']},
+                {prompt: '', name: 'Calm', labels: ['Not calm (1)','(2)','(3)','(4)','(5)','(6)','Calm (7)']},
+                {prompt: '', name: 'Triumphant', labels: ['Not triumphant (1)','(2)','(3)','(4)','(5)','(6)','Triumphant (7)']},
+                {prompt: '', name: 'Agitated', labels: ['Not agitated (1)','(2)','(3)','(4)','(5)','(6)','Agitated (7)']}
+            ],
+            scale_width: 1000,
+            randomize_question_order: true,
+            autocomplete: false,
+            required: true,
+            data: {
+                stimulus: mediaFile
+            }
+        };
+        timeline.push(videoOnly);
+    }
+});
+
+    var end1 = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: `
+        <div style="text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <p style="font-size: 32px; margin-left: -20px;">The End</p>
+                        <p style="font-size: 24px; margin-left: -20px;">You've come to the end of the experiment.<br>
+                            Thank you for participating and for helping us<br>
+                            learn more about the way people perceive music in animation.
+                            </p>
+                    </div>
+                    <img src="images/end.png" style="width: 400px; height: auto;">
+                </div>
+            </div>
+        `,
+        choices: ['<img src="images/next.png" style="width: 150px; height: auto;">'],
+        };
+
+    timeline.push(end1);
+
+    var end2 = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: `
+            <div style="text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <p style="font-size: 32px; margin-left: -20px;">TEMPORAL CONGRUENCE<br>
+                            BETWEEN MUSIC & ANIMATION,<br>AND ITS EFFECT ON EMOTION PERCEPTION</p>
+                        <br><br><br>
+                        <hr style="border-top: 8px orange; margin-left: -20px;">
+                        <p style="font-size: 24px; margin-left: -20px;">Thank you for participating in this study!</p>
+                        <br><br><br>
+                    </div>
+                    <img src="images/thank.png" style="width: 400px; height: auto;">
+                </div>
+            </div>
+        `,
+        choices:['Finish'],
+        on_finish: function(data) {
+            document.body.innerHTML += '<p>Let the experimenter know that you are done. Thank you!</p>';
+        },
+    }
+    timeline.push(end2);
+
+    var all_data = jsPsych.data.get();
+    console.log(all_data.csv());
+
+    jsPsych.run(timeline);
+
+  </script>
+</html>
